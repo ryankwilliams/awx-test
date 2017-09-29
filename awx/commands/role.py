@@ -51,7 +51,7 @@ class AwxRole(AwxBase):
         return self._role_types
 
     def grant(self, team=None, user=None, type="use", inventory=None,
-              job_template= None, project=None, credential=None):
+              project=None, credential=None):
 
         _user = self.user.get(user)
         # TODO: add support for TEAM
@@ -83,7 +83,7 @@ class AwxRole(AwxBase):
             raise Exception(ex.message)
 
     def revoke(self, team=None, user=None, type="use", inventory=None,
-              job_template= None, project=None, credential=None):
+              project=None, credential=None):
 
         _user = self.user.get(user)
         # TODO: add support for TEAM
