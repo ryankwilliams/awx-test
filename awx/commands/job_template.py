@@ -89,7 +89,8 @@ class AwxJobTemplate(AwxBase):
                 project=_project['id'],
                 playbook=playbook,
                 credential=_credential['id'],
-                extra_vars=_extra_vars
+                extra_vars=_extra_vars,
+                fail_on_found=True
             )
         except Found as ex:
             raise Exception(ex.message)

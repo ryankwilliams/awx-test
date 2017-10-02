@@ -37,7 +37,8 @@ class AwxHost(AwxBase):
         self.resource.create(
             name=name,
             inventory=_inv['id'],
-            variables=json.dumps(variables)
+            variables=json.dumps(variables),
+            fail_on_found = True
         )
 
     def delete(self, name, inventory):

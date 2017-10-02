@@ -58,7 +58,8 @@ class AwxCredential(AwxBase):
             name=name,
             kind='ssh',
             organization=_org['id'],
-            ssh_key_data=key_content
+            ssh_key_data=key_content,
+            fail_on_found=True
         )
 
     def delete(self, name, kind):
