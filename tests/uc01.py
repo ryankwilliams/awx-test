@@ -38,14 +38,23 @@ awx.host.create(
 )
 
 # run ad hoc command (ping host)
-awx.ad_hoc.launch(
+results = awx.ad_hoc.launch(
     'run',
     'ping',
     INVENTORY,
     CREDENTIAL
 )
 
-sleep(20)
+job_id = results['id']
+
+while True:
+    results = awx.ad_hoc.get(job_id)
+    if results['status'] == 'successful':
+        print(awx.ad_hoc.stdout(job_id))
+        break
+    sleep(2)
+
+sleep(10)
 
 # delete host
 awx.host.delete(HOST, INVENTORY)
