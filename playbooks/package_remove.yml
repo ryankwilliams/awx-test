@@ -1,0 +1,19 @@
+---
+- name: Remove package
+  hosts: "{{ hosts | default('all') }}"
+  gather_facts: false
+
+  vars:
+    _package: "{{ package }}"
+
+  tasks:
+    - name: Remove package
+      package:
+        name: "{{ _package }}"
+        state: absent
+      register: results
+      become: true
+
+    - name: Remove output
+      debug:
+        msg: "{{ results }}"

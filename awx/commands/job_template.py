@@ -1,4 +1,6 @@
 """Awx job template helper module."""
+import json
+
 from tower_cli.exceptions import Found, NotFound
 
 from .credential import AwxCredential
@@ -41,7 +43,7 @@ class AwxJobTemplate(AwxBase):
         return self.resource.list()
 
     def create(self, name, description, job_type, inventory, project, playbook,
-               credential):
+               credential, extra_vars=None):
         """Create a job template.
 
         :param name: Template name.
@@ -58,6 +60,8 @@ class AwxJobTemplate(AwxBase):
         :type playbook: str
         :param credential: Credential name.
         :type credential: str
+        :param extra_vars: Extra variables.
+        :type extra_vars: list
         """
         # get credential object
         _credential = self.credential.get(credential)
@@ -68,6 +72,14 @@ class AwxJobTemplate(AwxBase):
         # get project object
         _project = self.project.get(project)
 
+        # set extra vars
+        _extra_vars = list()
+        if extra_vars:
+            for elem in extra_vars:
+                _extra_vars.append(json.dumps(elem))
+        else:
+            _extra_vars = None
+
         try:
             self.resource.create(
                 name=name,
@@ -76,7 +88,8 @@ class AwxJobTemplate(AwxBase):
                 inventory=_inventory['id'],
                 project=_project['id'],
                 playbook=playbook,
-                credential=_credential['id']
+                credential=_credential['id'],
+                extra_vars=_extra_vars
             )
         except Found as ex:
             raise Exception(ex.message)

@@ -1,0 +1,20 @@
+---
+- name: Install package
+  hosts: "{{ hosts | default('all') }}"
+  gather_facts: false
+
+  vars:
+    _package: "{{ package }}"
+    _state: "{{ state | default('latest') }}"
+
+  tasks:
+    - name: Install package
+      package:
+        name: "{{ _package }}"
+        state: "{{ _state }}"
+      register: results
+      become: true
+
+    - name: Install output
+      debug:
+        msg: "{{ results }}"
