@@ -86,23 +86,65 @@ awx.job_template.create(
 )
 
 # run template 01
-awx.job.launch(
+results = awx.job.launch(
     name=JOB_TEMPLATE_01,
     reason='Install a package.',
     extra_vars=[{'package': 'tree'}]
 )
 
-# delay
-sleep(60)
+job_id = results["id"]
+
+try:
+    job_output = awx.job.monitor(job_id, interval=1, timeout=60)
+    print job_output
+except Exception as e:
+    if "aborted due to timeout" in e.message:
+        print "reached the timeout period, cancel the job"
+    else:
+        print "Error occurred during job monitoring: {}".format(e.message)
+    cancelled_job = awx.job.cancel(job_id)
+    print cancelled_job
+    print "Waiting 10 seconds for the job to be cancelled"
+    sleep(10) # wait for 10 seconds for the job to be successfully cancelled
+
+status = awx.job.status(job_id)
+if status['status'] == 'successful':
+    print 'Playbook execution was successful'
+elif status['status'] == 'failed':
+    print 'Playbook execution failed'
+
+print "Results: {}".format(status)
+print 'Output: {}'.format(awx.job.stdout(job_id))
 
 # run template 02
-awx.job.launch(
+results = awx.job.launch(
     name=JOB_TEMPLATE_02,
     reason='Remove a installed pacakage.'
 )
 
-# delay
-sleep(60)
+job_id = results["id"]
+
+try:
+    job_output = awx.job.monitor(job_id, interval=1, timeout=60)
+    print job_output
+except Exception as e:
+    if "aborted due to timeout" in e.message:
+        print "reached the timeout period, cancel the job"
+    else:
+        print "Error occurred during job monitoring: {}".format(e.message)
+    cancelled_job = awx.job.cancel(job_id)
+    print cancelled_job
+    print "Waiting 10 seconds for the job to be cancelled"
+    sleep(10) # wait for 10 seconds for the job to be successfully cancelled
+
+status = awx.job.status(job_id)
+if status['status'] == 'successful':
+    print 'Playbook execution was successful'
+elif status['status'] == 'failed':
+    print 'Playbook execution failed'
+
+print "Results: {}".format(status)
+print 'Output: {}'.format(awx.job.stdout(job_id))
 
 # delete templates
 for template in [JOB_TEMPLATE_01, JOB_TEMPLATE_02]:
