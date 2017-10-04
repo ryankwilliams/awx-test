@@ -69,13 +69,19 @@ class AwxAdHoc(AwxBase):
         # get inventory object
         _inventory = self.inventory.get(inventory)
 
-        return self.resource.launch(
+        self.logger.info('Launching ad hoc module %s.' % module)
+
+        data = self.resource.launch(
             job_type=job_type,
             module_name=module,
             inventory=_inventory['id'],
             credential=_credential['id'],
             module_args=module_args
         )
+
+        self.logger.info('Ad hoc module %s successfully launched!' % module)
+
+        return data
 
     def get(self, job_id):
         """Get ad hoc.
@@ -86,6 +92,7 @@ class AwxAdHoc(AwxBase):
         try:
             return self.resource.get(job_id)
         except NotFound as ex:
+            self.logger.error('Ad hoc job id %s does not exist!' % job_id)
             raise Exception(ex.message)
 
     def status(self, job_id):

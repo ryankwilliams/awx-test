@@ -45,6 +45,8 @@ class AwxInventory(AwxBase):
         if not _org:
             raise Exception('Organization %s not found.' % organization)
 
+        self.logger.info('Creating inventory %s.' % name)
+
         try:
             self.resource.create(
                 name=name,
@@ -54,7 +56,10 @@ class AwxInventory(AwxBase):
                 fail_on_found=True
             )
         except Found as ex:
+            self.logger.error('Inventory %s already exists!' % name)
             raise Exception(ex.message)
+
+        self.logger.info('Inventory %s successfully created!' % name)
 
     def delete(self, name):
         """Delete an inventory.
@@ -62,7 +67,9 @@ class AwxInventory(AwxBase):
         :param name: Filename.
         :type name: str
         """
+        self.logger.info('Deleting inventory %s.' % name)
         self.resource.delete(name=name)
+        self.logger.info('Inventory %s successfully deleted!' % name)
 
     def get(self, name):
         """Get inventory.

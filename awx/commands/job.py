@@ -48,8 +48,12 @@ class AwxJob(AwxBase):
         else:
             _extra_vars = None
 
+        self.logger.info('Launching job template %s.' % name)
+
         self.resource.launch(
             job_template=_job_template['id'],
             job_explanation=reason,
             extra_vars=_extra_vars
         )
+
+        self.logger.info('Job template %s successfully launched!' % name)

@@ -82,6 +82,8 @@ class AwxProject(AwxBase):
         if not _org:
             raise Exception('Organization %s not found.' % organization)
 
+        self.logger.info('Creating SCM project %s.' % name)
+
         try:
             self.resource.create(
                 name=name,
@@ -98,7 +100,10 @@ class AwxProject(AwxBase):
                 fail_on_found=True
             )
         except Found as ex:
+            self.logger.error('SCM project %s already exists!' % name)
             raise Exception(ex.message)
+
+        self.logger.info('SCM project %s successfully created!' % name)
 
     def create_manual_project(self, name, description, organization):
         """Create project based on manual source.
@@ -117,6 +122,8 @@ class AwxProject(AwxBase):
         if not _org:
             raise Exception('Organization %s not found.' % organization)
 
+        self.logger.info('Creating manual project %s.' % name)
+
         try:
             self.resource.create(
                 name=name,
@@ -126,8 +133,10 @@ class AwxProject(AwxBase):
                 fail_on_found=True
             )
         except Found as ex:
+            self.logger.error('Manual project %s already exists!' % name)
             raise Exception(ex.message)
 
+        self.logger.info('Manual project %s successfully created!' % name)
 
     def delete(self, name):
         """Delete a project.
@@ -135,4 +144,6 @@ class AwxProject(AwxBase):
         :param name: Project name.
         :type name: str
         """
+        self.logger.info('Deleting project %s.' % name)
         self.resource.delete(name=name)
+        self.logger.info('Project %s successfully deleted.' % name)

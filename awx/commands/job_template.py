@@ -82,6 +82,8 @@ class AwxJobTemplate(AwxBase):
         else:
             _extra_vars = None
 
+        self.logger.info('Creating job template %s.' % name)
+
         try:
             self.resource.create(
                 name=name,
@@ -96,7 +98,10 @@ class AwxJobTemplate(AwxBase):
                 fail_on_found=True
             )
         except Found as ex:
+            self.logger.error('Job template %s already exists!' % name)
             raise Exception(ex.message)
+
+        self.logger.info('Job template %s successfully created!' % name)
 
     def delete(self, name, project):
         """Delete a job template.
@@ -110,7 +115,9 @@ class AwxJobTemplate(AwxBase):
         _project = self.project.get(project)
 
         # delete job template
+        self.logger.info('Deleting job template %s.' % name)
         self.resource.delete(name=name, project=_project['id'])
+        self.logger.info('Job template %s successfully deleted!' % name)
 
     def get(self, name):
         """Get job template.
