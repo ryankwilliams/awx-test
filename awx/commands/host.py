@@ -34,12 +34,16 @@ class AwxHost(AwxBase):
         except Exception:
             raise Exception('Inventory %s not found.' % inventory)
 
+        self.logger.info('Creating host %s.' % name)
+
         self.resource.create(
             name=name,
             inventory=_inv['id'],
             variables=json.dumps(variables),
             fail_on_found = True
         )
+
+        self.logger.info('Host %s successfully created!' % name)
 
     def delete(self, name, inventory):
         """Delete a host."""
@@ -49,7 +53,6 @@ class AwxHost(AwxBase):
         except Exception:
             raise Exception('Inventory %s not found.' % inventory)
 
-        self.resource.delete(
-            name=name,
-            inventory=_inv['id']
-        )
+        self.logger.info('Deleting host %s.' % name)
+        self.resource.delete(name=name, inventory=_inv['id'])
+        self.logger.info('Host %s successfully deleted!' % name)

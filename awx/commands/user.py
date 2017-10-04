@@ -38,6 +38,7 @@ class AwxUser(AwxBase):
         :param system_auditor: System auditor field.
         :type system_auditor: bool
         """
+        self.logger.info('Creating user %s.' % name)
         try:
             self.resource.create(
                 username=name,
@@ -50,7 +51,10 @@ class AwxUser(AwxBase):
                 fail_on_found=True
             )
         except Found as ex:
+            self.logger.error('User %s already exists!' % name)
             raise Exception(ex.message)
+
+        self.logger.info('User %s successfully created!' % name)
 
     def delete(self, name):
         """Delete a user.
@@ -58,7 +62,9 @@ class AwxUser(AwxBase):
         :param name: Username.
         :type name: str
         """
+        self.logger.info('Deleting user %s.' % name)
         self.resource.delete(username=name)
+        self.logger.info('User %s successfully deleted.' % name)
 
     def get(self, name):
         """Get a user.

@@ -11,9 +11,13 @@ the following actions with Ansible AWX:
     6. Delete inventory
     7. Delete organization
 """
+from logging import getLogger
 from time import sleep
 
 from awx import Awx
+from awx.awx import __awx_name__
+
+LOG = getLogger(__awx_name__)
 
 # global variables
 CREDENTIAL = 'Demo Credential'
@@ -50,7 +54,7 @@ job_id = results['id']
 while True:
     results = awx.ad_hoc.get(job_id)
     if results['status'] == 'successful':
-        print(awx.ad_hoc.stdout(job_id))
+        LOG.info(awx.ad_hoc.stdout(job_id))
         break
     sleep(2)
 

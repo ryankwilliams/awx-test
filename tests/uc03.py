@@ -10,15 +10,19 @@ the following actions with Ansible AWX:
     5. List projects.
     6. Delete manual project.
 """
-from pprint import pprint
+from logging import getLogger
+from pprint import pformat
 from time import sleep
 
 from awx import Awx
+from awx.awx import __awx_name__
+
+LOG = getLogger(__awx_name__)
 
 
 def list_projects():
     for project in awx.project.projects['results']:
-        pprint(dict(project), indent=4)
+        LOG.info(pformat(dict(project), indent=4))
 
 
 # create awx object

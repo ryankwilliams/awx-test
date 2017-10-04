@@ -34,6 +34,8 @@ class AwxOrganization(AwxBase):
         :param description: Organization description.
         :type description: str
         """
+        self.logger.info('Creating organization %s.' % name)
+
         try:
             self.resource.create(
                 name=name,
@@ -41,7 +43,10 @@ class AwxOrganization(AwxBase):
                 fail_on_found=True
             )
         except Found as ex:
+            self.logger.error('Organization %s already exists!' % name)
             raise Exception(ex.message)
+
+        self.logger.info('Organization %s successfully created!' % name)
 
     def delete(self, name):
         """Delete an organization.
@@ -49,7 +54,9 @@ class AwxOrganization(AwxBase):
         :param name: Organization name.
         :type name: str
         """
+        self.logger.info('Deleting organization %s.' % name)
         self.resource.delete(name=name)
+        self.logger.info('Organization %s successfully deleted!' % name)
 
     def associate(self, organization, name):
         """Associate a user with the team
