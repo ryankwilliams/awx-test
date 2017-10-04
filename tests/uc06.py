@@ -14,6 +14,8 @@ a possible workflow using the following actions with Ansible AWX:
     9. As the Admin, give permission to the user to the Inventory
     10. As the User, check if the template exists, create if it does not
     11. As the User, launch the template
+    12. Gather the results
+    13. Delete the inventory and template
 """
 from awx import Awx
 import time
@@ -215,13 +217,35 @@ except Exception as e:
         print e.message
         exit(1)
 
-awx_user.job.launch(TEMPLATE_NAME, TEMPLATE_RUN_DESCRIPTION)
+results = awx_user.job.launch(TEMPLATE_NAME, TEMPLATE_RUN_DESCRIPTION)
+
+job_id = results["id"]
+
+# wait for the job to be complete before deleting
+try:
+    job_output = awx.job.monitor(job_id, interval=1, timeout=60)
+    print job_output
+except Exception as e:
+    if "aborted due to timeout" in e.message:
+        print "reached the timeout period, cancel the job"
+    else:
+        print "Error occurred during job monitoring: {}".format(e.message)
+    cancelled_job = awx.job.cancel(job_id)
+    print cancelled_job
+    print "Waiting 10 seconds for the job to be cancelled"
+    sleep(10) # wait for 10 seconds for the job to be successfully cancelled
+
+status = awx.job.status(job_id)
+if status['status'] == 'successful':
+    print 'Playbook execution was successful'
+elif status['status'] == 'failed':
+    print 'Playbook execution failed'
+
+print "Results: {}".format(status)
+print 'Output: {}'.format(awx.job.stdout(job_id))
 
 # Cleanup (Remove template, inventory)
 # User, Credentials, Project will not be removed
-
-# wait for the job to be complete before deleting
-time.sleep(60)
 awx.inventory.delete(INVENTORY_NAME)
 awx.job_template.delete(TEMPLATE_NAME, PROJECT)
 print "Use Case is complete"

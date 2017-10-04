@@ -72,13 +72,35 @@ awx.job_template.create(
 )
 
 # run template
-awx.job.launch(
+results = awx.job.launch(
     name=JOB_TEMPLATE,
     reason='A demo job launch for testing purposes.'
 )
 
-# delay
-sleep(30)
+job_id = results["id"]
+
+# wait for the job is done and gather the output
+try:
+    job_output = awx.job.monitor(job_id, interval=1, timeout=60)
+    print job_output
+except Exception as e:
+    if "aborted due to timeout" in e.message:
+        print "reached the timeout period, cancel the job"
+    else:
+        print "Error occurred during job monitoring: {}".format(e.message)
+    cancelled_job = awx.job.cancel(job_id)
+    print cancelled_job
+    print "Waiting 10 seconds for the job to be cancelled"
+    sleep(10) # wait for 10 seconds for the job to be successfully cancelled
+
+status = awx.job.status(job_id)
+if status['status'] == 'successful':
+    print 'Playbook execution was successful'
+elif status['status'] == 'failed':
+    print 'Playbook execution failed'
+
+print "Results: {}".format(status)
+print 'Output: {}'.format(awx.job.stdout(job_id))
 
 # delete template
 awx.job_template.delete(
