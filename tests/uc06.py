@@ -17,8 +17,13 @@ a possible workflow using the following actions with Ansible AWX:
     12. Gather the results
     13. Delete the inventory and template
 """
+from logging import getLogger
+from time import sleep
+
 from awx import Awx
-import time
+from awx.awx import __awx_name__
+
+LOG = getLogger(__awx_name__)
 
 # Got a request from user test2, to execute system-release.yml, which exists
 # in the NewProj project, using the sshkey for creds
@@ -57,10 +62,9 @@ try:
     )
 except Exception as e:
     if "already exists" in e.message :
-        print "Organization Already Exists, Will Not Create, CONTINUING"
-        pass
+        LOG.warn("Organization Already Exists, Will Not Create, CONTINUING")
     else:
-        print e.message
+        LOG.error(e.message)
         exit(1)
 
 # create the team
@@ -70,10 +74,9 @@ try:
     )
 except Exception as e:
     if "already exists" in e.message:
-        print "Team Already Exists, Will Not Create, CONTINUING"
-        pass
+        LOG.warn("Team Already Exists, Will Not Create, CONTINUING")
     else:
-        print e.message
+        LOG.error(e.message)
         exit(1)
 
 # verify the user exists, create if user doesn't exist
@@ -89,10 +92,9 @@ try:
     )
 except Exception as e:
     if "already exists" in e.message :
-        print "User Already Exists, Will Not Create, CONTINUING"
-        pass
+        LOG.warn("User Already Exists, Will Not Create, CONTINUING")
     else:
-        print e.message
+        LOG.error(e.message)
         exit(1)
 
 # Add the user to the team
@@ -121,10 +123,9 @@ try:
     )
 except Exception as e:
     if "already exists" in e.message :
-        print "Project Already Exists, Will Not Create, CONTINUING"
-        pass
+        LOG.warn("Project Already Exists, Will Not Create, CONTINUING")
     else:
-        print e.message
+        LOG.error(e.message)
         exit(1)
 
 # give the user permissions to the project
@@ -132,10 +133,9 @@ try:
     awx.role.grant(user=USER, project=PROJECT)
 except Exception as e:
     if "already a member" in e.message :
-        print "User Already Has Correct Permissions, CONTINUING"
-        pass
+        LOG.warn("User Already Has Correct Permissions, CONTINUING")
     else:
-        print e.message
+        LOG.error(e.message)
         exit(1)
 
 
@@ -147,10 +147,9 @@ try:
                                          SSH_KEY_LOCATION)
 except Exception as e:
     if "already exists" in e.message :
-        print "Credential Already Exists, Will Not Create, CONTINUING"
-        pass
+        LOG.warn("Credential Already Exists, Will Not Create, CONTINUING")
     else:
-        print e.message
+        LOG.error(e.message)
         exit(1)
 
 try:
@@ -158,10 +157,9 @@ try:
     awx.role.grant(user=USER, credential=CREDENTIAL_NAME)
 except Exception as e:
     if "already a member" in e.message :
-        print "User Already Has Correct Permissions, CONTINUING"
-        pass
+        LOG.warn("User Already Has Correct Permissions, CONTINUING")
     else:
-        print e.message
+        LOG.error(e.message)
         exit(1)
 
 # create inventory
@@ -169,10 +167,9 @@ try:
     awx.inventory.create(INVENTORY_NAME, ORGANIZATION)
 except Exception as e:
     if "already exists" in e.message :
-        print "Inventory Already Exists, Will Not Create, CONTINUING"
-        pass
+        LOG.warn("Inventory Already Exists, Will Not Create, CONTINUING")
     else:
-        print e.message
+        LOG.error(e.message)
         exit(1)
 
 # create host
@@ -183,10 +180,9 @@ try:
     )
 except Exception as e:
     if "already exists" in e.message :
-        print "Host Already Exists in Inventory, Will Not Create, CONTINUING"
-        pass
+        LOG.warn("Host Already Exists in Inventory, Will Not Create, CONTINUING")
     else:
-        print e.message
+        LOG.error(e.message)
         exit(1)
 
 try:
@@ -194,10 +190,9 @@ try:
     awx.role.grant(user=USER, inventory=INVENTORY_NAME)
 except Exception as e:
     if "already a member" in e.message :
-        print "User Already Has Correct Permissions, CONTINUING"
-        pass
+        LOG.warn("User Already Has Correct Permissions, CONTINUING")
     else:
-        print e.message
+        LOG.error(e.message)
         exit(1)
 
 try:
@@ -211,10 +206,9 @@ try:
                                  extra_vars=PLAYBOOK_VARS)
 except Exception as e:
     if "already exists" in e.message :
-        print "Job Template Already Exists, Will Not Create, CONTINUING"
-        pass
+        LOG.warn("Job Template Already Exists, Will Not Create, CONTINUING")
     else:
-        print e.message
+        LOG.error(e.message)
         exit(1)
 
 results = awx_user.job.launch(TEMPLATE_NAME, TEMPLATE_RUN_DESCRIPTION)
@@ -224,28 +218,28 @@ job_id = results["id"]
 # wait for the job to be complete before deleting
 try:
     job_output = awx.job.monitor(job_id, interval=1, timeout=60)
-    print job_output
+    LOG.info(job_output)
 except Exception as e:
     if "aborted due to timeout" in e.message:
-        print "reached the timeout period, cancel the job"
+        LOG.error("reached the timeout period, cancel the job")
     else:
-        print "Error occurred during job monitoring: {}".format(e.message)
+        LOG.error("Error occurred during job monitoring: {}".format(e.message))
     cancelled_job = awx.job.cancel(job_id)
-    print cancelled_job
-    print "Waiting 10 seconds for the job to be cancelled"
+    LOG.info(cancelled_job)
+    LOG.debug("Waiting 10 seconds for the job to be cancelled")
     sleep(10) # wait for 10 seconds for the job to be successfully cancelled
 
 status = awx.job.status(job_id)
 if status['status'] == 'successful':
-    print 'Playbook execution was successful'
+    LOG.info('Playbook execution was successful')
 elif status['status'] == 'failed':
-    print 'Playbook execution failed'
+    LOG.error('Playbook execution failed')
 
-print "Results: {}".format(status)
-print 'Output: {}'.format(awx.job.stdout(job_id))
+LOG.info("Results: {}".format(status))
+LOG.info('Output: {}'.format(awx.job.stdout(job_id)))
 
 # Cleanup (Remove template, inventory)
 # User, Credentials, Project will not be removed
 awx.inventory.delete(INVENTORY_NAME)
 awx.job_template.delete(TEMPLATE_NAME, PROJECT)
-print "Use Case is complete"
+LOG.info("Use Case is complete")
