@@ -43,7 +43,7 @@ class AwxJobTemplate(AwxBase):
         return self.resource.list()
 
     def create(self, name, description, job_type, inventory, project, playbook,
-               credential, extra_vars=None):
+               credential, extra_vars=None, ask_variables_on_launch=False):
         """Create a job template.
 
         :param name: Template name.
@@ -62,6 +62,8 @@ class AwxJobTemplate(AwxBase):
         :type credential: str
         :param extra_vars: Extra variables.
         :type extra_vars: list
+        :param ask_variables_on_launch: Prompt for playbook vars at run.
+        :type ask_variables_on_launch: bool
         """
         # get credential object
         _credential = self.credential.get(credential)
@@ -90,6 +92,7 @@ class AwxJobTemplate(AwxBase):
                 playbook=playbook,
                 credential=_credential['id'],
                 extra_vars=_extra_vars,
+                ask_variables_on_launch=ask_variables_on_launch,
                 fail_on_found=True
             )
         except Found as ex:

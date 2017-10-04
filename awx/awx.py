@@ -1,6 +1,8 @@
 """Awx helper module."""
 from tower_cli.conf import settings
 
+from . import __name__ as __awx_name__
+from .base import LoggerMixin
 from .commands.ad_hoc import AwxAdHoc
 from .commands.config import AwxConfig
 from .commands.credential import AwxCredential
@@ -26,10 +28,10 @@ from .commands.workflow import AwxWorkflow
 from .commands.workflow_job import AwxWorkflowJob
 
 
-class Awx(object):
+class Awx(LoggerMixin):
     """Awx class."""
 
-    def __init__(self, host=None, username=None, password=None):
+    def __init__(self, host=None, username=None, password=None, verbose=1):
         """Constructor.
 
         :param host: Ansible AWX host URL.
@@ -38,7 +40,11 @@ class Awx(object):
         :type username: str
         :param password: AWX password.
         :type password: str
+        :param verbose: Logging verbosity level.
+        :type verbose: int
         """
+        self.create_logger(__awx_name__, verbose=verbose)
+
         self._ad_hoc = AwxAdHoc()
         self._config = AwxConfig()
         self._credential = AwxCredential()

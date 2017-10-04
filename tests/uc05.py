@@ -61,7 +61,7 @@ awx.project.create_scm_project(
 
 sleep(15)
 
-# create template 01
+# create template 01, prompt for variables at run time
 awx.job_template.create(
     name=JOB_TEMPLATE_01,
     description='Template to install package.',
@@ -70,10 +70,10 @@ awx.job_template.create(
     project=PROJECT,
     playbook='playbooks/package_install.yml',
     credential=CREDENTIAL,
-    extra_vars=[{'package': 'tree'}]
+    ask_variables_on_launch=True
 )
 
-# create template 02
+# create template 02, variables static to template
 awx.job_template.create(
     name=JOB_TEMPLATE_02,
     description='Template to remove package.',
@@ -88,11 +88,12 @@ awx.job_template.create(
 # run template 01
 awx.job.launch(
     name=JOB_TEMPLATE_01,
-    reason='Install a package.'
+    reason='Install a package.',
+    extra_vars=[{'package': 'tree'}]
 )
 
 # delay
-sleep(5)
+sleep(60)
 
 # run template 02
 awx.job.launch(
@@ -101,7 +102,7 @@ awx.job.launch(
 )
 
 # delay
-sleep(30)
+sleep(60)
 
 # delete templates
 for template in [JOB_TEMPLATE_01, JOB_TEMPLATE_02]:
