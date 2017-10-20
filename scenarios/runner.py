@@ -3,13 +3,46 @@ import time
 import uuid
 
 import yaml
+import requests
+from urlparse import urljoin
 
 from awx import Awx
 
+TOWER_USER = '<user>'
+TOWER_PASSWORD = '<password>'
+TOWER_URL = '<awx_url>'
+
+def get_playbook_project(awx, url, user, password, playbook_name):
+    # function that searches all playbooks and returns the project
+    # that contains the playbook if exists.
+
+    # get all projects
+    all_projects = awx.project.projects
+    all_playbooks = []
+
+    # get a dictionary of projects and playbooks
+    project_playbooks = {}
+
+    for proj in all_projects["results"]:
+        playbook_path = proj["related"]["playbooks"]
+        full_url = urljoin(url, playbook_path)
+        r = requests.get(full_url, auth=(user, password), verify=False)
+        all_playbooks.extend(r.json())
+        project_playbooks[proj["name"]] = r.json()
+
+    # TODO: need a better way to do this
+    playbook_name = playbook_name + ".yml"
+
+    if playbook_name not in all_playbooks:
+        return None
+    else:
+        for project in project_playbooks:
+            if playbook_name in project_playbooks[project]:
+                return project
 
 class Runner(object):
 
-    __organization__ = 'minion'
+    __organization__ = 'Carbon'
 
     def __init__(self, scenario):
         self.scenario = scenario
@@ -26,35 +59,7 @@ class Runner(object):
         self.scenario_data = dict()
         self.hosts = dict()
         self.orchestrate = dict()
-
-        # create awx object for admin user
-        admin_awx = Awx()
-
-        # create minion organization
-        try:
-            admin_awx.organization.create(name=self.__organization__)
-        except Exception:
-            admin_awx.logger.warn('Organization already exists, skipping..')
-
-        # create kingbob user
-        try:
-            admin_awx.user.create(
-                'kingbob',
-                'password',
-                'kingbob@kingbob.com',
-                'Kingbob',
-                'Kingbob',
-                superuser=True
-            )
-        except Exception:
-            admin_awx.logger.warn('User already exists, skipping..')
-
-        # create awx object for kingbob user
-        self._awx = Awx(
-            host='http://localhost',
-            username='kingbob',
-            password='password'
-        )
+        self._awx=Awx()
 
     @property
     def organization(self):
@@ -69,6 +74,8 @@ class Runner(object):
         self._awx = value
 
     def run(self):
+        created_proj=True
+
         # load scenario
         with open(self.scenario, 'r') as fh:
             self.scenario_data = yaml.load(fh)
@@ -76,42 +83,63 @@ class Runner(object):
         self.hosts = self.scenario_data['provision']
         self.orchestrate = self.scenario_data['orchestrate']
 
-        # create inventory
-        self.awx.inventory.create(
-            name=self.inventory,
-            organization=self.organization
-        )
-
-        # create host and add to inventory
-        for item in self.hosts:
-            self.awx.host.create(
-                name=item['host'],
-                inventory=self.inventory,
-                variables=item['ansible_vars']
-            )
 
         # create project and job templates
         for item in self.orchestrate:
+            # create inventory
+            self.awx.inventory.create(
+                name=self.inventory,
+                organization=self.organization
+            )
+
+            # create host and add to inventory
+            for host in self.hosts:
+                self.awx.host.create(
+                    name=host['host'],
+                    inventory=self.inventory,
+                    variables=host['ansible_vars']
+                )
+
+
             # only support scm (git)
-            if 'scm' not in item and 'git' not in item['scm']['type']:
+
+            if 'scm' not in item:
+                # must be using a common playbook, need to find project
+                # query to see if project exists
+                awx_user = self.awx
+                playbook = item["name"]
+
+                project = get_playbook_project(awx_user, TOWER_URL,
+                                                     TOWER_USER, TOWER_PASSWORD,
+                                                     playbook)
+                self.project = project
+                if not self.project:
+                    raise Exception("playbook not found")
+                else:
+                    created_proj=False
+
+            elif 'scm' not in item and 'git' not in item['scm']['type']:
                 continue
 
-            project = item['scm']['url'].split('/')[-1].split('.')[0]
+
             job_template = 'job_%s' % uuid.uuid4().hex[:4]
 
-            # create project
-            try:
-                self.awx.project.create_scm_project(
-                    name=project,
-                    description=item['scm']['url'],
-                    organization=self.organization,
-                    scm_type=item['scm']['type'],
-                    url=item['scm']['url']
-                )
-            except Exception:
-                self.awx.logger.warn('SCM project already exists..')
+            if created_proj:
+                project = item['scm']['url'].split('/')[-1].split('.')[0]
 
-            time.sleep(15)
+                # create project
+                try:
+                    self.awx.project.create_scm_project(
+                        name=project,
+                        description=item['scm']['url'],
+                        organization=self.organization,
+                        scm_type=item['scm']['type'],
+                        url=item['scm']['url']
+                    )
+                except Exception:
+                    self.awx.logger.warn('SCM project already exists..')
+
+                time.sleep(15)
 
             # create job template
             self.awx.job_template.create(
@@ -147,10 +175,15 @@ class Runner(object):
                 project=project
             )
 
-            # delete project
-            self.awx.project.delete(name=project)
+            # delete project if created
+            if created_proj:
+                self.awx.project.delete(name=project)
+
+            # delete the inventory
+            self.awx.inventory.delete(name=self.inventory)
+            created_proj = True
 
 
 if __name__ == '__main__':
-    runner = Runner('scenario_01.yml')
+    runner = Runner('scenario_03.yml')
     runner.run()

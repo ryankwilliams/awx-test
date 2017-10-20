@@ -9,6 +9,8 @@ provision:
       ansible_connection: local
 
 orchestrate:
+  - name: playbooks/system-release
+    hosts: client01
   - name: system-release
     hosts: client01
     scm:
