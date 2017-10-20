@@ -1,0 +1,16 @@
+---
+name: Simple scenario
+description: Simple scenario
+
+provision:
+  - name: client01
+    host: localhost
+    ansible_vars:
+      ansible_connection: local
+
+orchestrate:
+  - name: playbooks/system-release
+    hosts: client01
+    scm:
+      type: git
+      url: https://github.com/rywillia/awx-test.git
