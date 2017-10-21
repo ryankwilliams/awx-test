@@ -28,28 +28,28 @@ LOG = getLogger(__awx_name__)
 # Got a request from user test2, to execute system-release.yml, which exists
 # in the NewProj project, using the sshkey for creds
 
-USER="uc06"
-USER_PASSWORD="uc06"
-USER_EMAIL="uc06@test.com"
-PLAYBOOK="playbooks/system-release.yml"
-PLAYBOOK_VARS=None
-CREDENTIAL_NAME="uc06_creds"
-SSH_KEY_LOCATION="<location to ssh_key>"
-ORGANIZATION="Default"
-TEAM="QA"
+USER = "uc06"
+USER_PASSWORD = "uc06"
+USER_EMAIL = "uc06@test.com"
+PLAYBOOK = "playbooks/system-release.yml"
+PLAYBOOK_VARS = None
+CREDENTIAL_NAME = "uc06_creds"
+SSH_KEY_LOCATION = "<location to ssh_key>"
+ORGANIZATION = "Default"
+TEAM = "QA"
 
-INVENTORY_NAME="uc06test"
-INVENTORY_HOSTNAME="<add_machine_hostname>"
+INVENTORY_NAME = "uc06test"
+INVENTORY_HOSTNAME = "<add_machine_hostname>"
 
-TEMPLATE_NAME="Get_System_Release"
-TEMPLATE_TYPE="run"
-TEMPLATE_RUN_DESCRIPTION="Getting System Release"
+TEMPLATE_NAME = "Get_System_Release"
+TEMPLATE_TYPE = "run"
+TEMPLATE_RUN_DESCRIPTION = "Getting System Release"
 
 # there should be a query here to see if the playbook exists, which returned
 # yes it exist with the following project settings
-PROJECT="uc06_proj"
-PROJECT_TYPE="git"
-PROJECT_URL="http://github.com/rywillia/awx-test"
+PROJECT = "uc06_proj"
+PROJECT_TYPE = "git"
+PROJECT_URL = "http://github.com/rywillia/awx-test"
 
 # create awx objects, one for admin and one for a test user
 awx = Awx()
@@ -61,7 +61,7 @@ try:
         description='A demo organization for testing purposes.'
     )
 except Exception as e:
-    if "already exists" in e.message :
+    if "already exists" in e.message:
         LOG.warn("Organization Already Exists, Will Not Create, CONTINUING")
     else:
         LOG.error(e.message)
@@ -91,7 +91,7 @@ try:
         ''
     )
 except Exception as e:
-    if "already exists" in e.message :
+    if "already exists" in e.message:
         LOG.warn("User Already Exists, Will Not Create, CONTINUING")
     else:
         LOG.error(e.message)
@@ -110,7 +110,7 @@ awx_user = Awx(username=USER, password=USER_PASSWORD)
 # do some query here to see what playbooks exists in what project
 # should return New_Proj2 for this example
 
-#Verify New_Proj2 exists and the user has access to it
+# Verify New_Proj2 exists and the user has access to it
 try:
     awx.project.create_scm_project(
         PROJECT,
@@ -122,7 +122,7 @@ try:
         update_on_launch=True
     )
 except Exception as e:
-    if "already exists" in e.message :
+    if "already exists" in e.message:
         LOG.warn("Project Already Exists, Will Not Create, CONTINUING")
     else:
         LOG.error(e.message)
@@ -132,7 +132,7 @@ except Exception as e:
 try:
     awx.role.grant(user=USER, project=PROJECT)
 except Exception as e:
-    if "already a member" in e.message :
+    if "already a member" in e.message:
         LOG.warn("User Already Has Correct Permissions, CONTINUING")
     else:
         LOG.error(e.message)
@@ -146,7 +146,7 @@ try:
                                          ORGANIZATION,
                                          SSH_KEY_LOCATION)
 except Exception as e:
-    if "already exists" in e.message :
+    if "already exists" in e.message:
         LOG.warn("Credential Already Exists, Will Not Create, CONTINUING")
     else:
         LOG.error(e.message)
@@ -156,7 +156,7 @@ try:
     # give the user permissions to the credential
     awx.role.grant(user=USER, credential=CREDENTIAL_NAME)
 except Exception as e:
-    if "already a member" in e.message :
+    if "already a member" in e.message:
         LOG.warn("User Already Has Correct Permissions, CONTINUING")
     else:
         LOG.error(e.message)
@@ -166,7 +166,7 @@ except Exception as e:
 try:
     awx.inventory.create(INVENTORY_NAME, ORGANIZATION)
 except Exception as e:
-    if "already exists" in e.message :
+    if "already exists" in e.message:
         LOG.warn("Inventory Already Exists, Will Not Create, CONTINUING")
     else:
         LOG.error(e.message)
@@ -179,8 +179,10 @@ try:
         INVENTORY_NAME
     )
 except Exception as e:
-    if "already exists" in e.message :
-        LOG.warn("Host Already Exists in Inventory, Will Not Create, CONTINUING")
+    if "already exists" in e.message:
+        LOG.warn(
+            "Host Already Exists in Inventory, Will Not Create, CONTINUING"
+        )
     else:
         LOG.error(e.message)
         exit(1)
@@ -189,7 +191,7 @@ try:
     # give the user permissions to the inventory
     awx.role.grant(user=USER, inventory=INVENTORY_NAME)
 except Exception as e:
-    if "already a member" in e.message :
+    if "already a member" in e.message:
         LOG.warn("User Already Has Correct Permissions, CONTINUING")
     else:
         LOG.error(e.message)
@@ -205,7 +207,7 @@ try:
                                  credential=CREDENTIAL_NAME,
                                  extra_vars=PLAYBOOK_VARS)
 except Exception as e:
-    if "already exists" in e.message :
+    if "already exists" in e.message:
         LOG.warn("Job Template Already Exists, Will Not Create, CONTINUING")
     else:
         LOG.error(e.message)
@@ -227,7 +229,7 @@ except Exception as e:
     cancelled_job = awx.job.cancel(job_id)
     LOG.info(cancelled_job)
     LOG.debug("Waiting 10 seconds for the job to be cancelled")
-    sleep(10) # wait for 10 seconds for the job to be successfully cancelled
+    sleep(10)  # wait for 10 seconds for the job to be successfully cancelled
 
 status = awx.job.status(job_id)
 if status['status'] == 'successful':

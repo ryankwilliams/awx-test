@@ -1,5 +1,6 @@
 """Awx job helper module."""
 import json
+
 from tower_cli.exceptions import NotFound
 
 from .job_template import AwxJobTemplate
@@ -92,7 +93,11 @@ class AwxJob(AwxBase):
         :rtype: dict
         """
         try:
-            return self.resource.monitor(job_id, interval=interval, timeout=timeout)
+            return self.resource.monitor(
+                job_id,
+                interval=interval,
+                timeout=timeout
+            )
         except NotFound as ex:
             raise Exception(ex.message)
 

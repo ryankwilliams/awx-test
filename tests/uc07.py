@@ -7,18 +7,19 @@ with the REST api to perform the following actions with Ansible AWX:
     2. get all playbooks in the Organization
 """
 from logging import getLogger
-import requests
 from urlparse import urljoin
+
+import requests
 
 from awx import Awx
 from awx.awx import __awx_name__
 
 LOG = getLogger(__awx_name__)
 
-PROJECT="Demo Project"
-TOWER_URL="http://localhost"
-TOWER_USER="<user>"
-TOWER_PASSWORD="<password>"
+PROJECT = "Demo Project"
+TOWER_URL = "http://localhost"
+TOWER_USER = "<user>"
+TOWER_PASSWORD = "<password>"
 
 # create awx objects
 awx = Awx()

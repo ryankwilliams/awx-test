@@ -4,6 +4,7 @@ import json
 from .inventory import AwxInventory
 from ..base import AwxBase
 
+
 # TODO: Add in additional parameters that are optional for all methods.
 
 
@@ -40,7 +41,7 @@ class AwxHost(AwxBase):
             name=name,
             inventory=_inv['id'],
             variables=json.dumps(variables),
-            fail_on_found = True
+            fail_on_found=True
         )
 
         self.logger.info('Host %s successfully created!' % name)

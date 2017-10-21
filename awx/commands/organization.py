@@ -4,6 +4,7 @@ from tower_cli.exceptions import Found
 from .user import AwxUser
 from ..base import AwxBase
 
+
 # TODO: Add in additional parameters that are optional for all methods.
 
 
@@ -102,5 +103,3 @@ class AwxOrganization(AwxBase):
             if item['name'] == name:
                 return item
         return {}
-
-

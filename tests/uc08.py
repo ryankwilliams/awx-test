@@ -30,11 +30,12 @@ Prerequisites:
   carbon-user cannot see the job (even though the user created the template
   and launched the job).
 """
+import uuid
 from logging import getLogger
 from time import sleep
-import uuid
-import requests
 from urlparse import urljoin
+
+import requests
 
 from awx import Awx
 from awx.awx import __awx_name__
@@ -45,7 +46,7 @@ LOG = getLogger(__awx_name__)
 # should already be created
 ORGANIZATION = 'Carbon'
 CREDENTIAL_PREFIX = 'cred_'
-SSH_KEY_LOCATION='<location to ssh_key>'
+SSH_KEY_LOCATION = '<location to ssh_key>'
 INVENTORY_PREFIX = 'inv_'
 PROJECT_PREFIX = 'proj_'
 JOB_TEMPLATE_PREFIX = 'job'
@@ -80,6 +81,7 @@ def get_playbook_project(awx, url, user, password, playbook_name):
         for project in project_playbooks:
             if playbook_name in project_playbooks[project]:
                 return project
+
 
 # variable to track if the project needs to be deleted
 del_project = False
@@ -133,8 +135,8 @@ sleep(15)
 
 # create credentials
 awx_user.credential.create_ssh_credential(credential,
-                                     ORGANIZATION,
-                                     SSH_KEY_LOCATION)
+                                          ORGANIZATION,
+                                          SSH_KEY_LOCATION)
 
 # create template
 awx_user.job_template.create(
@@ -167,7 +169,7 @@ except Exception as e:
     cancelled_job = awx_user.job.cancel(job_id)
     LOG.error(cancelled_job)
     LOG.debug("Waiting 10 seconds for the job to be cancelled")
-    sleep(10) # wait for 10 seconds for the job to be successfully cancelled
+    sleep(10)  # wait for 10 seconds for the job to be successfully cancelled
 
 status = awx_user.job.status(job_id)
 if status['status'] == 'successful':

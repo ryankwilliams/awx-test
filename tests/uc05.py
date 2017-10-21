@@ -109,7 +109,7 @@ except Exception as e:
     cancelled_job = awx.job.cancel(job_id)
     LOG.error(cancelled_job)
     LOG.debug("Waiting 10 seconds for the job to be cancelled")
-    sleep(10) # wait for 10 seconds for the job to be successfully cancelled
+    sleep(10)  # wait for 10 seconds for the job to be successfully cancelled
 
 status = awx.job.status(job_id)
 if status['status'] == 'successful':
@@ -139,7 +139,7 @@ except Exception as e:
     cancelled_job = awx.job.cancel(job_id)
     LOG.error(cancelled_job)
     LOG.debug("Waiting 10 seconds for the job to be cancelled")
-    sleep(10) # wait for 10 seconds for the job to be successfully cancelled
+    sleep(10)  # wait for 10 seconds for the job to be successfully cancelled
 
 status = awx.job.status(job_id)
 if status['status'] == 'successful':

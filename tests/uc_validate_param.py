@@ -38,14 +38,16 @@ Scenario 4: no validation is done, because there is no description file, so the
             playbook is executed as is.
 
 """
+import ast
 import sys
+import uuid
 from logging import getLogger
 from time import sleep
+from urlparse import urljoin
+
 import requests
 import yaml
-import uuid
-from urlparse import urljoin
-import ast
+
 from awx import Awx
 from awx.awx import __awx_name__
 
@@ -55,7 +57,7 @@ LOG = getLogger(__awx_name__)
 # should already be created
 ORGANIZATION = 'Carbon'
 CREDENTIAL_PREFIX = 'cred_'
-SSH_KEY_LOCATION='<location to ssh_key>'
+SSH_KEY_LOCATION = '<location to ssh_key>'
 INVENTORY_PREFIX = 'inv_'
 PROJECT_PREFIX = 'proj_'
 JOB_TEMPLATE_PREFIX = 'job_'
@@ -67,21 +69,23 @@ TOWER_URL = 'http://localhost'
 # playbook and variables passed by the user
 # Scenario 1
 PLAYBOOK = 'var_test.yml'
-vars = {'hello':'just_a_test',
-        'hello2':'same_test'}
+svars = dict(
+    hello='just_a_test',
+    hello2='same_test'
+)
 
 # # Scenario 2
 # PLAYBOOK = 'system-release.yml'
-# vars = {}
+# svars = {}
 
 # # Scenario 3, failed validation
 # PLAYBOOK = 'var_test.yml'
-# vars = {'hello':'just_a_test'}
+# svars = {'hello':'just_a_test'}
 #
 # # Scenario 4
 # # no description, skipping validation
 # PLAYBOOK = 'playbooks/system-release.yml'
-# vars = {}
+# svars = {}
 
 
 def get_playbook_project(awx, url, user, password, playbook_name):
@@ -108,6 +112,7 @@ def get_playbook_project(awx, url, user, password, playbook_name):
         for project in project_playbooks:
             if playbook_name in project_playbooks[project]:
                 return project
+
 
 # variable to track if the project needs to be deleted
 del_project = False
@@ -139,7 +144,7 @@ project_dict = ast.literal_eval(proj_desc)
 playbook_url = urljoin(project_dict["git_url"], PLAYBOOK)
 split_playbook = PLAYBOOK.rsplit(".", 1)
 playbook_desc = split_playbook[0] + "_desc." + split_playbook[1]
-playbook_desc_url =urljoin(project_dict["git_url"], playbook_desc)
+playbook_desc_url = urljoin(project_dict["git_url"], playbook_desc)
 
 
 r = requests.get(playbook_desc_url)
@@ -154,9 +159,10 @@ else:
     for required_var in desc_dict["required"]:
         # make sure the required var is not None
         if required_var:
-            if not(required_var in vars and vars[required_var]):
-                LOG.error("validation failed: Required variable {} is not set," 
-                " can't continue".format(required_var))
+            if not(required_var in svars and svars[required_var]):
+                LOG.error(
+                    "validation failed: Required variable {} is not set,"
+                    "can't continue".format(required_var))
                 sys.exit(1)
         else:
             LOG.debug("no required vars")
@@ -179,8 +185,8 @@ awx_user.host.create(
 )
 # create credentials
 awx_user.credential.create_ssh_credential(credential,
-                                     ORGANIZATION,
-                                     SSH_KEY_LOCATION)
+                                          ORGANIZATION,
+                                          SSH_KEY_LOCATION)
 
 # create template
 awx_user.job_template.create(
@@ -191,7 +197,7 @@ awx_user.job_template.create(
     project=project["name"],
     playbook=PLAYBOOK,
     credential=credential,
-    extra_vars=[vars]
+    extra_vars=[svars]
 )
 
 # run template
@@ -214,7 +220,7 @@ except Exception as e:
     cancelled_job = awx_user.job.cancel(job_id)
     LOG.error(cancelled_job)
     LOG.debug("Waiting 10 seconds for the job to be cancelled")
-    sleep(10) # wait for 10 seconds for the job to be successfully cancelled
+    sleep(10)  # wait for 10 seconds for the job to be successfully cancelled
 
 status = awx_user.job.status(job_id)
 if status['status'] == 'successful':

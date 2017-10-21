@@ -1,11 +1,13 @@
 """Awx role helper module."""
-from tower_cli.exceptions import Found, NotFound
+from tower_cli.exceptions import Found
 
 from .credential import AwxCredential
-from .project import AwxProject
 from .inventory import AwxInventory
+from .project import AwxProject
 from .user import AwxUser
 from ..base import AwxBase
+
+
 # TODO: Add in additional parameters that are optional for all methods.
 
 
@@ -19,7 +21,6 @@ class AwxRole(AwxBase):
         self._project = AwxProject()
         self._inventory = AwxInventory()
         self._user = AwxUser()
-        self._role_types = ['admin', 'read', 'member', 'exectue', 'adhoc', 'update', 'use', 'auditor']
         super(AwxRole, self).__init__()
 
     @property
@@ -47,69 +48,58 @@ class AwxRole(AwxBase):
         """Return credential instance."""
         return self._user
 
-    def role_types(self):
-        return self._role_types
-
     def grant(self, team=None, user=None, type="use", inventory=None,
               project=None, credential=None):
 
-        _user = self.user.get(user)
+        user = self.user.get(user)
         # TODO: add support for TEAM
 
         if credential:
             # get credential object
-            _credential = self.credential.get(credential)
-            credential=_credential["id"]
+            credential = self.credential.get(credential)
         elif inventory:
-            _inventory = self.inventory.get(inventory)
-            inventory = _inventory["id"]
+            inventory = self.inventory.get(inventory)
         elif project:
-            _project = self.project.get(project)
-            project = _project["id"]
+            project = self.project.get(project)
         else:
             raise Exception("Set a resource type to associate the role")
-
 
         try:
             self.resource.grant(
                                 type=type,
-                                user=_user["id"],
+                                user=user['id'],
                                 team=team,
-                                credential=credential,
-                                inventory=inventory,
-                                project=project,
+                                credential=credential['id'],
+                                inventory=inventory['id'],
+                                project=project['id'],
                                 fail_on_found=True)
         except Found as ex:
             raise Exception(ex.message)
 
     def revoke(self, team=None, user=None, type="use", inventory=None,
-              project=None, credential=None):
+               project=None, credential=None):
 
-        _user = self.user.get(user)
+        user = self.user.get(user)
         # TODO: add support for TEAM
 
         if credential:
             # get credential object
-            _credential = self.credential.get(credential)
-            credential=_credential["id"]
+            credential = self.credential.get(credential)
         elif inventory:
-            _inventory = self.inventory.get(inventory)
-            inventory = _inventory["id"]
+            inventory = self.inventory.get(inventory)
         elif project:
-            _project = self.project.get(project)
-            project = _project["id"]
+            project = self.project.get(project)
         else:
             raise Exception("Set a resource type to associate the role")
-
 
         try:
             self.resource.revoke(
                                 type=type,
-                                user=_user["id"],
+                                user=user['id'],
                                 team=team,
-                                credential=credential,
-                                inventory=inventory,
-                                project=project,
+                                credential=credential['id'],
+                                inventory=inventory['id'],
+                                project=project['id'],
                                 fail_on_found=True)
         except Found as ex:
             raise Exception(ex.message)

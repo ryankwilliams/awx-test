@@ -1,16 +1,17 @@
 """Runner."""
 import time
 import uuid
-
-import yaml
-import requests
 from urlparse import urljoin
+
+import requests
+import yaml
 
 from awx import Awx
 
 TOWER_USER = '<user>'
 TOWER_PASSWORD = '<password>'
 TOWER_URL = '<awx_url>'
+
 
 def get_playbook_project(awx, url, user, password, playbook_name):
     # function that searches all playbooks and returns the project
@@ -40,6 +41,7 @@ def get_playbook_project(awx, url, user, password, playbook_name):
             if playbook_name in project_playbooks[project]:
                 return project
 
+
 class Runner(object):
 
     __organization__ = 'Carbon'
@@ -59,7 +61,7 @@ class Runner(object):
         self.scenario_data = dict()
         self.hosts = dict()
         self.orchestrate = dict()
-        self._awx=Awx()
+        self._awx = Awx()
 
     @property
     def organization(self):
@@ -74,7 +76,7 @@ class Runner(object):
         self._awx = value
 
     def run(self):
-        created_proj=True
+        created_proj = True
 
         # load scenario
         with open(self.scenario, 'r') as fh:
@@ -82,7 +84,6 @@ class Runner(object):
 
         self.hosts = self.scenario_data['provision']
         self.orchestrate = self.scenario_data['orchestrate']
-
 
         # create project and job templates
         for item in self.orchestrate:
@@ -100,7 +101,6 @@ class Runner(object):
                     variables=host['ansible_vars']
                 )
 
-
             # only support scm (git)
 
             if 'scm' not in item:
@@ -109,18 +109,21 @@ class Runner(object):
                 awx_user = self.awx
                 playbook = item["name"]
 
-                project = get_playbook_project(awx_user, TOWER_URL,
-                                                     TOWER_USER, TOWER_PASSWORD,
-                                                     playbook)
+                project = get_playbook_project(
+                    awx_user,
+                    TOWER_URL,
+                    TOWER_USER,
+                    TOWER_PASSWORD,
+                    playbook
+                )
+
                 self.project = project
                 if not self.project:
                     raise Exception("playbook not found")
                 else:
-                    created_proj=False
-
+                    created_proj = False
             elif 'scm' not in item and 'git' not in item['scm']['type']:
                 continue
-
 
             job_template = 'job_%s' % uuid.uuid4().hex[:4]
 
