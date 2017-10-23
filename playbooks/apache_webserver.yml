@@ -1,0 +1,16 @@
+---
+- name: Install and start apache web server
+  hosts: "{{ hosts | default('all') }}"
+  gather_facts: False
+
+  tasks:
+    - name: Install apache
+      package:
+        name: httpd
+        state: latest
+      become: True
+
+    - name: Start apache service
+      systemd:
+        state: started
+        name: httpd

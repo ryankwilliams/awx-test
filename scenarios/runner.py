@@ -5,6 +5,7 @@ from urlparse import urljoin
 
 import requests
 import yaml
+import time
 
 from awx import Awx
 
@@ -185,6 +186,7 @@ class Runner(object):
             # delete the inventory
             self.awx.inventory.delete(name=self.inventory)
             created_proj = True
+            time.sleep(10)
 
 
 if __name__ == '__main__':
