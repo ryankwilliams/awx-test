@@ -1,7 +1,9 @@
-import yaml
-import os
-import uuid
 import time
+import uuid
+
+import os
+import yaml
+
 from awx import Awx
 
 
@@ -65,7 +67,7 @@ class Run(object):
                     item['scm']['url'],
                     self.organization,
                     'git',
-                    url=item['scm']['url']
+                    item['scm']['url']
                 )
             except Exception:
                 self.awx.logger.warn('Project %s already exists.' % project)
@@ -101,6 +103,10 @@ class Run(object):
                     timeout=300
                 )
                 self.awx.logger.debug(output)
+
+                # delay to open browser to show
+                time.sleep(30)
+
             except Exception as ex:
                 self.awx.logger.warn(ex)
 

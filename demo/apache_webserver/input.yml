@@ -1,16 +1,17 @@
+# Need to set host, ansible_user, ansible_ssh_private_key_file to run demo
 ---
 name: Apache web server
 description: Install apache web server on an individual node
 
 provision:
   - name: webserver
-    host: 10.8.245.88
+    host: 0.0.0.0
     ansible_vars:
-      ansible_user: fedora
-      ansible_ssh_private_key_file: /home/rywillia/.ssh/pit-jenkins
+      ansible_user: root
+      ansible_ssh_private_key_file: /home/user/.ssh/ssh_private_key
 
 orchestrate:
-  - name: playbooks/system-release
+  - name: playbooks/apache_webserver
     description: Setup basic apache webserver
     hosts: webserver
     scm:
