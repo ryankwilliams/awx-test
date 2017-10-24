@@ -24,14 +24,12 @@ orchestrate:
     hosts: webserver
     scm:
       url: https://github.com/rywillia/awx-test.git
-      branch: edits
 
   - name: playbooks/package_install
     description: Install mariadb
     hosts: database
     scm:
       url: https://github.com/rywillia/awx-test.git
-      branch: edits
     extra_vars:
       - package: mariadb
 
@@ -40,6 +38,5 @@ orchestrate:
     hosts: webserver database
     scm:
       url: https://github.com/rywillia/awx-test.git
-      branch: edits
     extra_vars:
       - package: docker
