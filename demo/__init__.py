@@ -31,6 +31,8 @@ class Run(object):
         # create inventory
         self.awx.inventory.create(self.inventory, self.organization)
 
+        credential = 'credential_%s' % self.rid
+
         # add hosts
         for host in self.hosts:
             try:
@@ -41,17 +43,29 @@ class Run(object):
 
             # create host
             self.awx.host.create(
-                host['host'],
-                self.inventory,
-                host['ansible_vars']
+                name=host['host'],
+                inventory=self.inventory,
+                variables=host['ansible_vars']
             )
 
             # create credential
-            credential = 'credential_%s' % self.rid
             self.awx.credential.create_ssh_credential(
-                credential,
-                self.organization,
-                ssh_key
+                name=credential,
+                organization=self.organization,
+                ssh_key_file=ssh_key
+            )
+
+            # create group
+            self.awx.group.create(
+                name=host['name'],
+                inventory=self.inventory
+            )
+
+            # associate host with group
+            self.awx.host.associate(
+                name=host['host'],
+                group=host['name'],
+                inventory=self.inventory
             )
 
         for item in self.orchestrate:
@@ -66,12 +80,12 @@ class Run(object):
                 project = item['scm']['url'].split('/')[-1].split('.')[0]
 
                 self.awx.project.create_scm_project(
-                    project,
-                    item['scm']['url'],
-                    self.organization,
-                    'git',
-                    item['scm']['url'],
-                    branch
+                    name=project,
+                    description=item['scm']['url'],
+                    organization=self.organization,
+                    scm_type='git',
+                    url=item['scm']['url'],
+                    branch=branch
                 )
             except Exception:
                 self.awx.logger.warn('Project %s already exists.' % project)
@@ -83,14 +97,23 @@ class Run(object):
 
             # create job template
             job_template = 'job_%s' % self.rid
+
+            # set extra vars for playbook
+            try:
+                extra_vars = item['extra_vars']
+            except KeyError:
+                extra_vars = None
+
             self.awx.job_template.create(
-                job_template,
-                item['description'],
-                'run',
-                self.inventory,
-                project,
-                '%s.yml' % item['name'],  # TODO: which file ext?
-                credential
+                name=job_template,
+                description=item['description'],
+                job_type='run',
+                inventory=self.inventory,
+                project=project,
+                playbook='%s.yml' % item['name'],  # TODO: which file ext?
+                credential=credential,
+                extra_vars=extra_vars,
+                limit=item['hosts'].replace(' ', ',').strip()
             )
 
             # run job template
@@ -110,19 +133,19 @@ class Run(object):
 
                 # delay
                 self.awx.logger.info('Delaying..')
-                time.sleep(30)
+                time.sleep(2)
 
             except Exception as ex:
                 self.awx.logger.warn(ex)
-
-            # delete inventory
-            self.awx.inventory.delete(self.inventory)
-
-            # delete credential
-            self.awx.credential.delete(credential, 'ssh')
 
             # delete job template
             self.awx.job_template.delete(job_template, project)
 
             # delete project
             self.awx.project.delete(project)
+
+        # delete inventory
+        self.awx.inventory.delete(self.inventory)
+
+        # delete credential
+        self.awx.credential.delete(credential, 'ssh')

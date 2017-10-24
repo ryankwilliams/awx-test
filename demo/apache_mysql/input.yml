@@ -1,0 +1,45 @@
+# Need to set host, ansible_user, ansible_ssh_private_key_file to run demo
+---
+name: Apache web server and MySQL database
+description: |
+  Install apache web server on node and MySQL database on node and then
+  install docker on both nodes
+
+provision:
+  - name: webserver
+    host: 0.0.0.0
+    ansible_vars:
+      ansible_user: root
+      ansible_ssh_private_key_file: /home/user/.ssh/ssh_private_key
+
+  - name: database
+    host: 0.0.0.0
+    ansible_vars:
+      ansible_user: root
+      ansible_ssh_private_key_file: /home/user/.ssh/ssh_private_key
+
+orchestrate:
+  - name: playbooks/apache_webserver
+    description: Setup basic apache webserver
+    hosts: webserver
+    scm:
+      url: https://github.com/rywillia/awx-test.git
+      branch: edits
+
+  - name: playbooks/package_install
+    description: Install mariadb
+    hosts: database
+    scm:
+      url: https://github.com/rywillia/awx-test.git
+      branch: edits
+    extra_vars:
+      - package: mariadb
+
+  - name: playbooks/package_install
+    description: Install docker
+    hosts: webserver database
+    scm:
+      url: https://github.com/rywillia/awx-test.git
+      branch: edits
+    extra_vars:
+      - package: docker

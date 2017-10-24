@@ -44,7 +44,8 @@ class AwxJobTemplate(AwxBase):
         return self.resource.list()
 
     def create(self, name, description, job_type, inventory, project, playbook,
-               credential, extra_vars=None, ask_variables_on_launch=False):
+               credential, extra_vars=None, ask_variables_on_launch=False,
+               limit=None):
         """Create a job template.
 
         :param name: Template name.
@@ -65,6 +66,8 @@ class AwxJobTemplate(AwxBase):
         :type extra_vars: list
         :param ask_variables_on_launch: Prompt for playbook vars at run.
         :type ask_variables_on_launch: bool
+        :param limit: Limit which hosts to run on based on inventory groups.
+        :type limit: list
         """
         # get credential object
         _credential = self.credential.get(credential)
@@ -96,7 +99,8 @@ class AwxJobTemplate(AwxBase):
                 credential=_credential['id'],
                 extra_vars=_extra_vars,
                 ask_variables_on_launch=ask_variables_on_launch,
-                fail_on_found=True
+                fail_on_found=True,
+                limit=limit
             )
         except Found as ex:
             self.logger.error('Job template %s already exists!' % name)

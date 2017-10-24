@@ -1,6 +1,6 @@
 """Awx credential helper module."""
 import os
-from tower_cli.exceptions import NotFound
+from tower_cli.exceptions import Found, NotFound
 
 from .organization import AwxOrganization
 from ..base import AwxBase
@@ -54,13 +54,16 @@ class AwxCredential(AwxBase):
             key_content = fh.read()
 
         # create credential entry
-        self.resource.create(
-            name=name,
-            kind='ssh',
-            organization=_org['id'],
-            ssh_key_data=key_content,
-            fail_on_found=True
-        )
+        try:
+            self.resource.create(
+                name=name,
+                kind='ssh',
+                organization=_org['id'],
+                ssh_key_data=key_content,
+                fail_on_found=True
+            )
+        except Found:
+            self.logger.warn('Credential %s already exists!' % name)
 
     def delete(self, name, kind):
         """Delete a credential entry."""
