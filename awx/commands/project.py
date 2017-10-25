@@ -1,4 +1,7 @@
 """Awx project module."""
+import urlparse
+
+import requests
 from tower_cli.exceptions import Found, NotFound
 
 from .organization import AwxOrganization
@@ -12,10 +15,11 @@ class AwxProject(AwxBase):
     """Awx project class."""
     __resource_name__ = 'project'
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Constructor."""
         super(AwxProject, self).__init__()
         self._scm_types = ['manual', 'git', 'hg', 'svn']
+        self.kwargs = kwargs
 
         self._organization = AwxOrganization()
 
@@ -33,6 +37,33 @@ class AwxProject(AwxBase):
     def projects(self):
         """Return a list of projects."""
         return self.resource.list()
+
+    @property
+    def playbooks(self):
+        """Return a dictionary of project and its available playbooks."""
+        playbooks = {}
+
+        for project in self.projects['results']:
+            play_path = project['related']['playbooks']
+            url = urlparse.urljoin(self.kwargs['host'], play_path)
+            response = requests.get(
+                url,
+                auth=(self.kwargs['username'], self.kwargs['password']),
+                verify=False
+            )
+            playbooks[project['name']] = response.json()
+        return playbooks
+
+    def get_playbook_project(self, playbook):
+        """Return the project for the associated playbook.
+
+        :param playbook: Playbook name.
+        :type playbook: str
+        """
+        for project, playbooks in self.playbooks.items():
+            for pb in playbooks:
+                if playbook in pb:
+                    return project
 
     def get(self, name):
         """Get project.

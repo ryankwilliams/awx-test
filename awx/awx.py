@@ -47,6 +47,17 @@ class Awx(LoggerMixin):
         """
         self.create_logger(__awx_name__, verbose=verbose)
 
+        # load awx credentials into memory
+        if host and username and password:
+            self._awx_host = host
+            self._awx_username = username
+            self._awx_password = password
+        else:
+            with open(self.__tower_cli_cfg__, 'r') as fh:
+                for item in fh.readlines():
+                    val = item.split(':', 1)
+                    setattr(self, '_awx_%s' % val[0], val[1].strip())
+
         self._ad_hoc = AwxAdHoc()
         self._config = AwxConfig()
         self._credential = AwxCredential()
@@ -61,7 +72,11 @@ class Awx(LoggerMixin):
         self._notification_template = AwxNotificationTemplate()
         self._organization = AwxOrganization()
         self._permission = AwxPermission()
-        self._project = AwxProject()
+        self._project = AwxProject(
+            host=self._awx_host,
+            username=self._awx_username,
+            password=self._awx_password
+        )
         self._role = AwxRole()
         self._schedule = AwxSchedule()
         self._setting = AwxSetting()
@@ -70,17 +85,6 @@ class Awx(LoggerMixin):
         self._version = AwxVersion()
         self._workflow = AwxWorkflow()
         self._workflow_job = AwxWorkflowJob()
-
-        # load awx credentials into memory
-        if host and username and password:
-            self._awx_host = host
-            self._awx_username = username
-            self._awx_password = password
-        else:
-            with open(self.__tower_cli_cfg__, 'r') as fh:
-                for item in fh.readlines():
-                    val = item.split(':', 1)
-                    setattr(self, '_awx_%s' % val[0], val[1].strip())
 
         # set runtime parameters, this will override ones defined by file
         self.runtime_settings('host', self._awx_host)
