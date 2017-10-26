@@ -6,6 +6,7 @@ from tower_cli.exceptions import Found, NotFound
 from .credential import AwxCredential
 from .inventory import AwxInventory
 from .project import AwxProject
+from .notification_template import AwxNotificationTemplate
 from ..base import AwxBase
 
 
@@ -22,6 +23,7 @@ class AwxJobTemplate(AwxBase):
         self._inventory = AwxInventory()
         self._credential = AwxCredential()
         self._project = AwxProject()
+        self._notification_template = AwxNotificationTemplate()
 
     @property
     def project(self):
@@ -37,6 +39,11 @@ class AwxJobTemplate(AwxBase):
     def inventory(self):
         """Return inventory instance."""
         return self._inventory
+
+    @property
+    def notification_template(self):
+        """Return notification instance."""
+        return self._notification_template
 
     @property
     def job_templates(self):
@@ -134,5 +141,32 @@ class AwxJobTemplate(AwxBase):
         """
         try:
             return self.resource.get(name=name)
+        except NotFound as ex:
+            raise Exception(ex.message)
+
+    def associate_notification_template(self, job_template,
+                                        notification_template, status="any"):
+        """ Associate Notification template with job.
+
+        :param job_template: Job template name.
+        :type job_template: str
+        :param notification_template: Notification Template name.
+        :type notificatin_template: str
+        :param status: Status to trigger Notificatin. Success, Failure or All
+        :type status: str any|error|success
+
+        """
+        # get Job object
+        _job = self.get(job_template)
+
+        # get Notification object
+        _notification_template =\
+            self.notification_template.get(notification_template)
+
+        try:
+            self.resource.associate_notification_template(
+                job_template=_job['id'],
+                notification_template=_notification_template['id'],
+                status=status)
         except NotFound as ex:
             raise Exception(ex.message)
