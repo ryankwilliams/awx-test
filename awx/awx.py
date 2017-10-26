@@ -84,7 +84,11 @@ class Awx(LoggerMixin):
         self._user = AwxUser()
         self._version = AwxVersion()
         self._workflow = AwxWorkflow()
-        self._workflow_job = AwxWorkflowJob()
+        self._workflow_job = AwxWorkflowJob(
+            host=self._awx_host,
+            username=self._awx_username,
+            password=self._awx_password
+        )
 
         # set runtime parameters, this will override ones defined by file
         self.runtime_settings('host', self._awx_host)

@@ -1,5 +1,8 @@
 """Awx workflow job helper module."""
 import json
+import requests
+import urlparse
+
 from tower_cli.exceptions import NotFound
 from ..base import AwxBase
 from .workflow import AwxWorkflow
@@ -11,10 +14,11 @@ class AwxWorkflowJob(AwxBase):
     """Awx workflow job class."""
     __resource_name__ = 'workflow_job'
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Constructor."""
         super(AwxWorkflowJob, self).__init__()
         self._workflow = AwxWorkflow()
+        self.kwargs = kwargs
 
     @property
     def workflow(self):
@@ -25,6 +29,25 @@ class AwxWorkflowJob(AwxBase):
     def workflow_jobs(self):
         """Return a list of jobs."""
         return self.resource.list()
+
+    def get_jobs(self, job_id):
+        """Return a dictionary of project and its available playbooks."""
+        jobs = []
+        workflow_nodes = "/api/v1/workflow_jobs/" + str(job_id) +\
+                         "/workflow_nodes/"
+        url = urlparse.urljoin(self.kwargs['host'], workflow_nodes)
+        response = requests.get(
+            url,
+            auth=(self.kwargs['username'], self.kwargs['password']),
+            verify=False
+        )
+
+        workflow_nodes = response.json()
+        for result in workflow_nodes["results"]:
+            if "job" in result["summary_fields"]:
+                jobs.append(result["summary_fields"]["job"]["id"])
+
+        return jobs
 
     def launch(self, name, extra_vars=None):
         """Launch a new job from a job template.

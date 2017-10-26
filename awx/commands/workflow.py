@@ -69,11 +69,15 @@ class AwxWorkflow(AwxBase):
         :rtype: dict
         """
         workflow_obj = self.get(name)
+
+        # load the schema file
+        with open(schema_loc, 'r') as fh:
+            schema_content = fh.read()
         # quit if organization not found
         if not workflow_obj:
             raise Exception('Workflow Template {} not found.'.format(name))
         return self.resource.schema(wfjt=workflow_obj["id"],
-                                    node_network=schema_loc)
+                                    node_network=schema_content)
 
     def get_schema(self, name):
         """Get the schema of an existing workflow schema

@@ -1,0 +1,7 @@
+- job_template: SYS_RELEASE_common
+  failure:
+  - job_template: SYS_RELEASE_vipatel
+  success:
+  - job_template: force_failure
+    failure:
+    - job_template: SYS_RELEASE_vipatel
