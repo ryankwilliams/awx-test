@@ -1,0 +1,1 @@
+{"username":"","password":"","host":"<email_host_url>","recipients":["<list_of_email_addresses>"],"sender":"<sender-email-addres>","port":<port>,"use_tls":true,"use_ssl":false}
