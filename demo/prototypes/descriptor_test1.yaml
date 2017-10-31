@@ -1,0 +1,75 @@
+---
+name: An Interop Test
+description: Testing an After Task
+
+credentials:
+
+  - name: openstack
+    auth_url: <openstack_auth_url>
+    tenant_name: pit-jenkins
+    tenant_id: <openstack_tenant_id>
+    username: username
+    password: password
+
+  - name: beaker
+
+provision:
+
+  - name: machine_1
+    provider: openstack
+    credential: openstack
+    os_name:
+    os_image: rhel-6.9-workstation-x86_64-latest
+    os_flavor: m1.small
+    os_networks: ['pit-jenkins']
+    os_floating_ip_pool: "<ip_pool>/22"
+    os_keypair: 'pit-jenkins'
+    os_admin_pass:
+    os_description:
+    os_files:
+    os_security_groups:
+    ip_address:
+    role: client
+
+  - name: machine_2
+    provider: openstack
+    credential: openstack
+    os_name:
+    os_image: rhel-6.9-workstation-x86_64-latest
+    os_flavor: m1.small
+    os_networks: ['pit-jenkins']
+    os_floating_ip_pool: "<ip_pool>/22"
+    os_keypair: 'pit-jenkins'
+    os_admin_pass:
+    os_description:
+    os_files:
+    os_security_groups:
+    ip_address:
+    role: client
+
+  - name: machine_3
+    provider: openstack
+    credential: openstack
+    os_name:
+    os_image: rhel-7.4-server-x86_64-latest
+    os_flavor: m1.medium
+    os_networks: ['pit-jenkins']
+    os_floating_ip_pool: "<ip_pool>/22"
+    os_keypair: 'pit-jenkins'
+    os_admin_pass:
+    os_description:
+    os_files:
+    os_security_groups:
+    ip_address:
+    role: server
+
+orchestrate:
+  - name: t1
+    hosts: machine_1, machine_2
+    vars:
+      packages: pexpect, git
+  - name: t2
+    hosts: machine_2
+    after: t3
+  - name: t3
+    hosts: machine_2, machine_3
