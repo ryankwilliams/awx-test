@@ -93,7 +93,7 @@ awx_user.host.create(
     variables=dict(ansible_connection='local')
 )
 
-for job_template in playbookdict:
+for index, job_template in enumerate(playbookdict):
     # query to see if project exists
     found_project = awx_user.project.get_playbook_project(
         playbookdict[job_template]['playbook_name'])
@@ -104,11 +104,11 @@ for job_template in playbookdict:
         # create a project with the local git
         # create a project
         awx_user.project.create_scm_project(
-            name=project,
+            name=project + (str(index)),
             description='A demo project for testing purposes.',
             organization=ORGANIZATION,
             scm_type='git',
-            url=playbookdict[job_template]['playbook_name']['scm']
+            url=playbookdict[job_template]['scm']
         )
         del_project = True
 

@@ -62,8 +62,6 @@ INVENTORY_PREFIX = 'inv_'
 PROJECT_PREFIX = 'proj_'
 JOB_TEMPLATE_PREFIX = 'job_'
 HOST = '<machine_to_test>'
-TOWER_USER = 'carbon-user'
-TOWER_PASSWORD = 'carbon-user'
 TOWER_URL = 'http://localhost'
 
 # playbook and variables passed by the user
@@ -126,12 +124,11 @@ job_template = JOB_TEMPLATE_PREFIX + scenario_guid
 credential = CREDENTIAL_PREFIX + scenario_guid
 
 # create awx object as carbon-user
-awx_user = Awx(username="carbon-user", password="carbon-user")
+awx_user = Awx()
 
 # query to see if project exists
-found_project = get_playbook_project(awx_user, TOWER_URL,
-                                     TOWER_USER, TOWER_PASSWORD,
-                                     PLAYBOOK)
+found_project = awx_user.project.get_playbook_project(PLAYBOOK)
+
 if found_project:
     project = awx_user.project.get(found_project)
 else:
