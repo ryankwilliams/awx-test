@@ -44,7 +44,6 @@ import uuid
 from logging import getLogger
 from time import sleep
 from urlparse import urljoin
-
 import requests
 import yaml
 
@@ -84,33 +83,6 @@ svars = dict(
 # # no description, skipping validation
 # PLAYBOOK = 'playbooks/system-release.yml'
 # svars = {}
-
-
-def get_playbook_project(awx, url, user, password, playbook_name):
-    # function that searches all playbooks and returns the project
-    # that contains the playbook if exists.
-
-    # get all projects
-    all_projects = awx.project.projects
-    all_playbooks = []
-
-    # get a dictionary of projects and playbooks
-    project_playbooks = {}
-
-    for proj in all_projects["results"]:
-        playbook_path = proj["related"]["playbooks"]
-        full_url = urljoin(url, playbook_path)
-        r = requests.get(full_url, auth=(user, password))
-        all_playbooks.extend(r.json())
-        project_playbooks[proj["name"]] = r.json()
-
-    if playbook_name not in all_playbooks:
-        return None
-    else:
-        for project in project_playbooks:
-            if playbook_name in project_playbooks[project]:
-                return project
-
 
 # variable to track if the project needs to be deleted
 del_project = False
