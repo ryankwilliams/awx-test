@@ -1,5 +1,5 @@
 """Awx project module."""
-import urlparse
+from urllib.parse import urljoin
 
 import requests
 from tower_cli.exceptions import Found, NotFound
@@ -45,7 +45,7 @@ class AwxProject(AwxBase):
 
         for project in self.projects['results']:
             play_path = project['related']['playbooks']
-            url = urlparse.urljoin(self.kwargs['host'], play_path)
+            url = urljoin(self.kwargs['host'], play_path)
             response = requests.get(
                 url,
                 auth=(self.kwargs['username'], self.kwargs['password']),

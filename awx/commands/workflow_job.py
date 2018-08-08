@@ -1,7 +1,7 @@
 """Awx workflow job helper module."""
 import json
 import requests
-import urlparse
+from urllib.parse import urljoin
 
 from tower_cli.exceptions import NotFound
 from ..base import AwxBase
@@ -35,7 +35,7 @@ class AwxWorkflowJob(AwxBase):
         jobs = []
         workflow_nodes = "/api/v1/workflow_jobs/" + str(job_id) +\
                          "/workflow_nodes/"
-        url = urlparse.urljoin(self.kwargs['host'], workflow_nodes)
+        url = urljoin(self.kwargs['host'], workflow_nodes)
         response = requests.get(
             url,
             auth=(self.kwargs['username'], self.kwargs['password']),
