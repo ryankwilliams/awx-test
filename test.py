@@ -152,13 +152,13 @@ class Run(object):
                 self.awx.logger.warning(ex)
 
             # delete job template
-            self.awx.job_template.delete(job_template, project)
-
-            # delete project
-            self.awx.project.delete(project)
-
-        # delete inventory
-        self.awx.inventory.delete(self.inventory)
+        #     self.awx.job_template.delete(job_template, project)
+        #
+        #     # delete project
+        #     self.awx.project.delete(project)
+        #
+        # # delete inventory
+        # self.awx.inventory.delete(self.inventory)
 
         # # delete credential
         # self.awx.credential.delete(credential, 'ssh')

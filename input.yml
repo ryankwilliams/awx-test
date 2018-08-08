@@ -12,9 +12,9 @@ provision:
 
 orchestrate:
   - name: playbooks/package_install
-    description: Install package
+    description: Setup basic apache webserver
     hosts: webserver
     extra_vars:
       - package: vim
     scm:
-      url: https://github.com/chrislevi/awx-test.git
+      url: https://github.com/rywillia/awx-test.git
