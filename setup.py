@@ -14,12 +14,12 @@ requirements = [
 setuptools.setup(
     name="awx-wrapper",
     version="0.1.1",
-    author="levich",
-    author_email="author@example.com",
-    description="A small example package",
+    author="rywillia",
+    author_email="rywillia@gmail.com",
+    description="awx python wrapper",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/chrislevi/awx-test",
+    url="https://github.com/rywillia/awx-test",
     packages=['awx'],
     install_requires=requirements,
     classifiers=(
