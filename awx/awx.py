@@ -1,5 +1,5 @@
 """Awx helper module."""
-from tower_cli.conf import settings
+from tower_cli import conf
 
 from . import __name__ as __awx_name__
 from .base import LoggerMixin
@@ -106,7 +106,7 @@ class Awx(LoggerMixin):
         :type value: str
         """
         if value:
-            settings.set_or_reset_runtime_param(key, value)
+            conf.settings.set_or_reset_runtime_param(key, value)
 
     @property
     def ad_hoc(self):

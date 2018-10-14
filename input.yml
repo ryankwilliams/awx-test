@@ -1,0 +1,20 @@
+# Need to set host, ansible_user, ansible_ssh_private_key_file to run demo
+---
+name: Apache web server
+description: Install apache web server on an individual node
+
+provision:
+  - name: webserver
+    host: 10.100.0.11
+    ansible_vars:
+      ansible_user: vagrant
+     # ansible_ssh_private_key_file: /opt/awx-python-wrapper/awx-test/ssh_key
+
+orchestrate:
+  - name: playbooks/package_install
+    description: Setup basic apache webserver
+    hosts: webserver
+    extra_vars:
+      - package: vim
+    scm:
+      url: https://github.com/rywillia/awx-test.git
